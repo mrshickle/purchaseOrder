@@ -106,7 +106,7 @@ $item = $items['Item'];
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-7" style="border: 1px solid #777777; height: 100px; ">
+        <div class="col-xs-7" style="border: 1px solid #777777; height: 100px; padding-top: 15px; ">
             <div class="row">
                 <div class="col-xs-6">
                     Vendor: <?= $vendor['name'] ?> <br/>
@@ -165,7 +165,7 @@ $item = $items['Item'];
 
                         <td><?= $orderLine['price'] ?></td>
                         <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
-                        <td></td>
+                        <td><?= $orderLine['price'] * $orderLine['numReceived'] ?></td>
                     </tr>
 
 
@@ -174,8 +174,66 @@ $item = $items['Item'];
             endif;
             ?>
 
+            <tr style="border: 1px solid #777;">
+                <td colspan="5">
 
+                </td>
+                <td>
+                    Subtotal
+                </td>
+                <td>
+                    <?php
+                    $subtotalOrdered = 0;
+                    foreach ($orderLines['OrderLine'] as $orderLine):
+
+                        $subtotalOrdered += $orderLine['price'] * $orderLine['quantity'];
+
+                    endforeach;
+                    echo $subtotalOrdered; ?>
+                </td>
+                <td>
+                    <?php
+                    $subtotalReceived = 0;
+                    foreach ($orderLines['OrderLine'] as $orderLine):
+
+                        $subtotalReceived += $orderLine['price'] * $orderLine['numReceived'];
+
+                    endforeach;
+                    echo $subtotalReceived; ?>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" rowspan="3" class="policy">
+                    Vendor must show Purchase Number on Invoices, packing slips, etc. Shipment of this order is "Sold
+                    To/Bill To" MPII, LTD, Corporate Office. Vendor must "Ship To: MPII, LTD store, as instructed above.
+                    This Purchase Order is to be entered as specified herein. Notify us immediately if unable to ship as
+                    specified.                                                    
+                </td>
+                <td>
+                    Shipping
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Tax</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Total:</td>
+                <td><?= $subtotalOrdered; ?></td>
+                <td><?= $subtotalReceived; ?></td>
+            </tr>
         </table>
+    </div>
+    <div class="row text-center">
+        <div class="col-xs-8 col-xs-offset-2">
+            <h3>
+                Do not send duplicate email and postal invoices. <br/>
+                e-mailed invoices must be sent to: LBULAVENDOR@gmail.com
+            </h3>
+        </div>
     </div>
 </div>
 </body>
