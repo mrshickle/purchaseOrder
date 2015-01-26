@@ -18,8 +18,8 @@ include_once('MOSAPICall.php');
 
 // setup our credentials
 // this key is to our demo data and allows full access to just /Account/797/Item control
-$apikey = 'fa7dfeae59395b0a2f1ebdabbab31b9b6d8039c596de645e765e37b1c370202d';
-$account_id = '98982';
+$apikey = '1d97805f5ba41b2131fd500621330e444b599d2285dd1eac7c2f65cca62a6043';
+$account_id = '98259';
 $mosapi = new MOSAPICall($apikey, $account_id);
 
 // compose vendors array

@@ -17,8 +17,8 @@ include_once('MOSAPICall.php');
 
 // setup our credentials
 // this key is to our demo data and allows full access to just /Account/797/Item control
-$apikey = 'fa7dfeae59395b0a2f1ebdabbab31b9b6d8039c596de645e765e37b1c370202d';
-$account_id = '98982';
+$apikey = '1d97805f5ba41b2131fd500621330e444b599d2285dd1eac7c2f65cca62a6043';
+$account_id = '98259';
 $mosapi = new MOSAPICall($apikey, $account_id);
 
 // compose vendors array
@@ -32,121 +32,151 @@ $currentOrderID = $_GET["order"];
 
 $orders = $mosapi->makeAPICall("Account.Order", "Get", $currentOrderID, null, 'json', 'load_relations=all');
 $order = $orders['Order'];
-
 $vendors = $mosapi->makeAPICall("Account.Vendor", "Get", $order['vendorID'], null, 'json', 'load_relations=all');
 $vendor = $vendors['Vendor'];
 $shops = $mosapi->makeAPICall("Account.Shop", "Get", $order['shopID'], null, 'json', 'load_relations=all');
 $shop = $shops['Shop'];
 
+$orderLines = $mosapi->makeAPICall("Account.OrderLine", "Get", null, null, 'json', 'orderID=' . $currentOrderID);
+
+
+// Get items query for getting only items from order Lines;
+$itemsQuery = 'itemID=IN,[';
+foreach ($orderLines['OrderLine'] as $orderLine):
+    $itemsQuery = $itemsQuery . $orderLine['itemID'] . ',';
+endforeach;
+$itemsQuery = substr($itemsQuery, 0, strlen($itemsQuery) - 1);
+$itemsQuery = $itemsQuery . ']';
+//echo $itemsQuery;
+$items = $mosapi->makeAPICall("Account.Item", "Get", null, null, 'json', $itemsQuery);
+$item = $items['Item'];
+
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap 101 Template</title>
 
-    <table>
-        <tr>
-            <td><img src="logo.png.png" alt=""/></td>
-            <td><?= $shop['name'] ?></td>
-            <td>
-                <h2>Purchase Order</h2>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
 
-                <p>
-                    Date: <?= $order['orderedDate'] ?> <br/>
-                    PO Number: <?= $order['orderID'] ?>
-                    <!--                    Ordered By: -->
-                </p>
-            </td>
-        </tr>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-4">
+            <img src="logo.png.png" alt="" class="img-responsive"/>
+        </div>
+        <div class="col-xs-4">
+            <h4><br/>MP II, LTD <br/> (dba) Light Bulbs Unlimited</h4>
+        </div>
+        <div class="col-xs-4">
+            <h3>Purchase Order</h3>
+            Date: <?= $order['orderedDate'] ?> <br/>
+            PO Number: #<?= $order['orderID'] ?> <br/>
+            Ordered By: John
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-6"><h4>Bill To:</h4></div>
+        <div class="col-xs-6"><h4>Ship To:</h4></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-6" style="border: 1px solid #777777">
+            MPII, LTD (dba) Light Bulbs Unlimited<br/>
+            14446 Ventura Blvd <br/>
+            Sherman Oaks, CA. 91423 <br/>
+            Phone: 323-621-0330 - Fax: 323-651-0313
+        </div>
+        <div class="col-xs-6" style="border: 1px solid #777777; border-left: none;">
+            <?= $shop['name'] ?> <br/>
+            <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
+            <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
+            <br/>
+            Phone: <?= $shop['Contact']['Phones']['ContactPhone']['number']; ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 text-center" style="background: #777">
+            <strong style="color: #fff">e-mailed invoices must be sent to: LBULVENDOR@gmail.com</strong>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-7" style="border: 1px solid #777777; height: 100px; ">
+            <div class="row">
+                <div class="col-xs-6">
+                    Vendor: <?= $vendor['name'] ?> <br/>
+                    Account#: <?= $vendor['accountNumber']; ?> <br/>
+                    Sales
+                    Rep: <?= $vendor['Reps']['VendorRep']['firstName'] . ' ' . $vendor['Reps']['VendorRep']['lastName'] ?>
+                </div>
+                <div class="col-xs-6">
+                    <?php foreach ($vendor['Contact']['Phones']['ContactPhone'] as $phone) {
+                        if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'] . '<br/>';
+                        if ($phone['useType'] == 'Fax') echo 'Fax: ' . $phone['number'] . '<br/>';
+                    } ?>
+                    Email: <?= $vendor['Contact']['Emails']['ContactEmail']['address'] ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-5" style="height: 100px; border: 1px solid #777777; border-left: none;">
+            <div class="row">
+                <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0;">
+                    Special Instructions: </h5>
+                <?= $order['shipInstructions']; ?>
+            </div>
+        </div>
+    </div>
 
-    </table>
-    <table>
-        <tr>
-            <td>Bill To:</td>
-            <td>Ship To:</td>
-        </tr>
-        <tr>
+    <div class="row">
+        <table class="theTable table text-center">
 
-            <td>
-                <?= $shop['name'] ?> <br/>
-                <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
-                <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
-                <br/>
-                 <?php if (is_array($shop['Contact']['Phones']['ContactPhone'])) {
-                    echo 'Phone: '.$shop['Contact']['Phones']['ContactPhone']['number'];
-                } else {
-                    foreach ($shop['Contact']['Phones']['ContactPhone'] as $phone) {
-                        if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'];
-                        if ($phone['useType'] == 'Fax') echo ' - Fax: ' . $phone['number'];
-                    }
-                };
-                ?>
-            </td>
-            <td>
-                <?= $shop['name'] ?> <br/>
-                <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
-                <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
-                <br/>
-                Phone: <?= $shop['Contact']['Phones']['ContactPhone']['number']; ?>
-                <?php foreach ($shop['Contact']['Phones']['ContactPhone'] as $phone) {
-//                    if ($phone['useType'] == 'Work') echo 'Phone: '.$phone['number'];
-//                    if ($phone['useType'] == 'Fax') echo ' - Fax: '.$phone['number'];
-//                    echo $phone['number'];
-                } ?>
-            </td>
-        </tr>
-    </table>
-    <table>
-        <tr>
-            <td>
-                e-mailed invoices must be sent to:
-            </td>
-        </tr>
-    </table>
-    <table>
-        <tr>
-            <td>
-                Vendor: <?= $vendor['name'] ?> <br/>
-                Sales Rep: <?= $vendor['Reps']['VendorRep']['firstName'].' '.$vendor['Reps']['VendorRep']['lastName'] ?>
-                Phone: <?php foreach ($vendor['Contact']['Phones']['ContactPhone'] as $phone) {
-                    if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'];
-                } ?>
-            </td>
-            <td>
-                <br/>
-                <?= $vendor['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
-                <?= $vendor['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $vendor['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $vendor['Contact']['Addresses']['ContactAddress']['zip']; ?>
-                <br/>
-                <?php foreach ($vendor['Contact']['Phones']['ContactPhone'] as $phone) {
-                    if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'];
-                    if ($phone['useType'] == 'Fax') echo ' - Fax: ' . $phone['number'];
-                } ?>
-            </td>
-        </tr>
-    </table>
-<?php
+            <tr>
+                <td>Qty Ordered</td>
+                <td>Qty Shipped</td>
+                <td>Units</td>
+                <td>Mfgr Code</td>
+                <td>Description</td>
+                <td>Unit Cost</td>
+                <td>Ordered Ext Cost</td>
+                <td>Shipped Ext Cost</td>
+            </tr>
 
 
+            <?php
+            if (is_array($orderLines['OrderLine'])):
+                foreach ($orderLines['OrderLine'] as $orderLine): ?>
 
-echo '<pre>';
-var_dump($orders['Order']);
-var_dump($vendors['Vendor']);
-var_dump($shops['Shop']);
 
-//echo
+                    <tr>
+                        <td><?= $orderLine['quantity'] ?></td>
+                        <td><?= $orderLine['numReceived'] ?></td>
+                        <td></td>
+                        <?php foreach ($item as $lineItem):
+                            if ($lineItem['itemID'] == $orderLine['itemID']): ?>
+                                <td class="text-left"><?= $lineItem['manufacturerSku'] ?></td>
+                                <td class="text-left"><?= $lineItem['description'] ?></td>
+                            <?php endif;?>
+                        <?php endforeach; ?>
 
-foreach ($orders['Order'] as $order) {
-//    if (!isset($vendors[$order['vendorID']])) {
-//        $vendors[$order['vendorID']] = $mosapi->makeAPICall("Account.Vendor", "Get", $order['vendorID'], null, 'json');
-//    }
+                        <td><?= $orderLine['price'] ?></td>
+                        <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
+                        <td></td>
+                    </tr>
 
-//    var_dump('Order:', $order);
-//    var_dump('Vendor:', $vendors[$order['vendorID']]);
-//    var_dump('--------------------');
-//
-//    echo '<a href="/order.php?order="'. $order['orderID'] .'">' . $order['orderID'] . ' - '. $order['orderedDate'] .'</a><br/>';
 
-}
-//die;
-// get the itemID out of the response XML
-//$item_id = $item_response_xml->itemID;
-//// Change the item's description
-//$updated_description = $item_description . " Updated!";
-//// make another API call to Account.Item, this time with Update method and our changed Item XML.
-//$updated_item_response_xml = $mosapi->makeAPICall("Account.Item","Update",$item_id,$xml_update_item);
+                <?php
+                endforeach;
+            endif;
+            ?>
+
+
+        </table>
+    </div>
+</div>
+</body>
+</html>
