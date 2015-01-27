@@ -76,7 +76,7 @@ $item = $items['Item'];
         </div>
         <div class="col-xs-4">
             <h3>Purchase Order</h3>
-            Date: <?= $order['orderedDate'] ?> <br/>
+            Date: <?= substr($order['orderedDate'], 0, -15) ?> <br/>
             PO Number: #<?= $order['orderID'] ?> <br/>
             Ordered By: John
         </div>
