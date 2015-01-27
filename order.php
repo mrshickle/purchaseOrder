@@ -41,7 +41,7 @@ $orderLines = $mosapi->makeAPICall("Account.OrderLine", "Get", null, null, 'json
 
 
 // Get items query for getting only items from order Lines;
-$itemsQuery = 'itemID=IN,[';
+$itemsQuery = 'load_relations=all&itemID=IN,[';
 foreach ($orderLines['OrderLine'] as $orderLine):
     $itemsQuery = $itemsQuery . $orderLine['itemID'] . ',';
 endforeach;
@@ -97,6 +97,7 @@ $item = $items['Item'];
             <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
             <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
             <br/>
+<!--            --><?php //foreach ($shop['Contact']['Phones']['ContactPhone']['number'] as $k) var_dump($k); ?>
             Phone: <?= $shop['Contact']['Phones']['ContactPhone']['number']; ?>
         </div>
     </div>
@@ -106,7 +107,7 @@ $item = $items['Item'];
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-7" style="border: 1px solid #777777; height: 100px; padding-top: 15px; ">
+        <div class="col-xs-7" style="border: 1px solid #777777; height: 120px; padding-top: 15px; ">
             <div class="row">
                 <div class="col-xs-6">
                     Vendor: <?= $vendor['name'] ?> <br/>
@@ -123,7 +124,7 @@ $item = $items['Item'];
                 </div>
             </div>
         </div>
-        <div class="col-xs-5" style="height: 100px; border: 1px solid #777777; border-left: none;">
+        <div class="col-xs-5" style="height: 120px; border: 1px solid #777777; border-left: none;">
             <div class="row">
                 <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0;">
                     Special Instructions: </h5>
@@ -155,9 +156,18 @@ $item = $items['Item'];
                     <tr>
                         <td><?= $orderLine['quantity'] ?></td>
                         <td><?= $orderLine['numReceived'] ?></td>
-                        <td></td>
                         <?php foreach ($item as $lineItem):
                             if ($lineItem['itemID'] == $orderLine['itemID']): ?>
+                                <td><?php if (is_array($lineItem['CustomFieldValues']['CustomFieldValue'])) {
+                                        foreach ($lineItem['CustomFieldValues']['CustomFieldValue'] as $customField) {
+                                            if ($customField['name'] == 'Unit') {
+                                                echo $customField['value'];
+                                            }
+                                        }
+                                    }?></td>
+<!--                                <td>-->
+<!--                                    <pre>--><?php //var_dump($lineItem['CustomFieldValues']['CustomFieldValue'])?>
+<!--                                </td>-->
                                 <td class="text-left"><?= $lineItem['manufacturerSku'] ?></td>
                                 <td class="text-left"><?= $lineItem['description'] ?></td>
                             <?php endif;?>
