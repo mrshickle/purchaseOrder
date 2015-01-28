@@ -1,0 +1,24 @@
+@bordercolor: #777;
+
+table {
+  margin-top: 20px;
+  border: 1px solid @bordercolor;
+  tr:first-child {
+    border-bottom: 1px solid @bordercolor;
+    border-top: 1px solid @bordercolor;
+    background: #DADADA;
+  }
+  td {
+    border-left: 1px solid @bordercolor;
+  }
+}
+
+.table > tbody > tr > td {
+  border-top: none;
+}
+
+.policy {
+  text-align: left;
+  border-left: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+}

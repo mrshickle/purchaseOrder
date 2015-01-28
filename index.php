@@ -75,14 +75,12 @@ foreach ($orders['Order'] as $order) {
         <?php foreach ($orders['Order'] as $order): ?>
 
             <tr>
-
                     <td><?= $order['orderID'] ?></td>
                     <td><?= $order['Shop']['name'] ?></td>
                     <td><?= $order['Vendor']['name'] ?></td>
                     <td><?= substr($order['orderedDate'], 0, -15) ?></td>
                     <td><?= substr($order['receivedDate'], 0, -15) ?></td>
                     <td><a href="/order.php?order=<?= $order['orderID']?>"><span class="glyphicon glyphicon-print" aria-hidden="true"></span></td>
-                </a>
             </tr>
 
         <?php endforeach; ?>

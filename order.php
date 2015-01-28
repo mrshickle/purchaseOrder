@@ -37,21 +37,29 @@ $vendor = $vendors['Vendor'];
 $shops = $mosapi->makeAPICall("Account.Shop", "Get", $order['shopID'], null, 'json', 'load_relations=all');
 $shop = $shops['Shop'];
 
-$orderLines = $mosapi->makeAPICall("Account.OrderLine", "Get", null, null, 'json', 'orderID=' . $currentOrderID);
+$all_orderLines = $mosapi->makeAPICall("Account.OrderLine", "Get", null, null, 'json', 'orderID=' . $currentOrderID);
+if (isset($all_orderLines['OrderLine'][0])) {
+    $orderLines = $all_orderLines;
+} else {
+    $orderLines['OrderLine'][0] = $all_orderLines['OrderLine'];
+}
 
-
-// Get items query for getting only items from order Lines;
-$itemsQuery = 'load_relations=all&itemID=IN,[';
-foreach ($orderLines['OrderLine'] as $orderLine):
-    $itemsQuery = $itemsQuery . $orderLine['itemID'] . ',';
-endforeach;
-$itemsQuery = substr($itemsQuery, 0, strlen($itemsQuery) - 1);
-$itemsQuery = $itemsQuery . ']';
-//echo $itemsQuery;
-$items = $mosapi->makeAPICall("Account.Item", "Get", null, null, 'json', $itemsQuery);
-$item = $items['Item'];
-
+if (count($orderLines['OrderLine']) > 1) {
+    // Get items query for getting only items from order Lines;
+    $itemsQuery = 'load_relations=all&itemID=IN,[';
+    foreach ($orderLines['OrderLine'] as $orderLine):
+        $itemsQuery = $itemsQuery . $orderLine['itemID'] . ',';
+    endforeach;
+    $itemsQuery = substr($itemsQuery, 0, strlen($itemsQuery) - 1);
+    $itemsQuery = $itemsQuery . ']';
+    $all_items = $mosapi->makeAPICall("Account.Item", "Get", null, null, 'json', $itemsQuery);
+    $items = $all_items['Item'];
+} else {
+    $item = $mosapi->makeAPICall("Account.Item", "Get", null, null, 'json', 'load_relations=all&itemID=' . $orderLines['OrderLine'][0]['itemID']);
+    $items[0] = $item['Item'];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,7 +105,6 @@ $item = $items['Item'];
             <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
             <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
             <br/>
-<!--            --><?php //foreach ($shop['Contact']['Phones']['ContactPhone']['number'] as $k) var_dump($k); ?>
             Phone: <?= $shop['Contact']['Phones']['ContactPhone']['number']; ?>
         </div>
     </div>
@@ -120,7 +127,9 @@ $item = $items['Item'];
                         if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'] . '<br/>';
                         if ($phone['useType'] == 'Fax') echo 'Fax: ' . $phone['number'] . '<br/>';
                     } ?>
-                    Email: <?= $vendor['Contact']['Emails']['ContactEmail']['address'] ?>
+                    <?php if (isset($vendor['Contact']['Emails']['ContactEmail']['address'])) {
+                        echo 'Email: ' . $vendor['Contact']['Emails']['ContactEmail']['address'];
+                    } ?>
                 </div>
             </div>
         </div>
@@ -149,39 +158,37 @@ $item = $items['Item'];
 
 
             <?php
-            if (is_array($orderLines['OrderLine'])):
-                foreach ($orderLines['OrderLine'] as $orderLine): ?>
-
-
-                    <tr>
-                        <td><?= $orderLine['quantity'] ?></td>
-                        <td><?= $orderLine['numReceived'] ?></td>
-                        <?php foreach ($item as $lineItem):
-                            if ($lineItem['itemID'] == $orderLine['itemID']): ?>
-                                <td><?php if (is_array($lineItem['CustomFieldValues']['CustomFieldValue'])) {
-                                        foreach ($lineItem['CustomFieldValues']['CustomFieldValue'] as $customField) {
-                                            if ($customField['name'] == 'Unit') {
-                                                echo $customField['value'];
-                                            }
+            $subtotalOrdered = 0;
+            $subtotalReceived = 0;
+            foreach ($orderLines['OrderLine'] as $orderLine):
+                $subtotalOrdered += $orderLine['price'] * $orderLine['quantity'];
+                $subtotalReceived += $orderLine['price'] * $orderLine['numReceived'];
+                ?>
+                <tr>
+                    <td><?= $orderLine['quantity'] ?></td>
+                    <td><?= $orderLine['numReceived'] ?></td>
+                    <?php foreach ($items as $item):
+                        if ($item['itemID'] == $orderLine['itemID']): ?>
+                            <td><?php if (is_array($item['CustomFieldValues']['CustomFieldValue'])) {
+                                    foreach ($item['CustomFieldValues']['CustomFieldValue'] as $customField) {
+                                        if ($customField['name'] == 'Unit') {
+                                            echo $customField['value'];
                                         }
-                                    }?></td>
-<!--                                <td>-->
-<!--                                    <pre>--><?php //var_dump($lineItem['CustomFieldValues']['CustomFieldValue'])?>
-<!--                                </td>-->
-                                <td class="text-left"><?= $lineItem['manufacturerSku'] ?></td>
-                                <td class="text-left"><?= $lineItem['description'] ?></td>
-                            <?php endif;?>
-                        <?php endforeach; ?>
+                                    }
+                                } ?>
+                            </td>
+                            <td><?= $item['manufacturerSku'] ?></td>
+                            <td><?= $item['description'] ?></td>
+                        <?php endif;?>
+                    <?php endforeach; ?>
 
-                        <td><?= $orderLine['price'] ?></td>
-                        <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
-                        <td><?= $orderLine['price'] * $orderLine['numReceived'] ?></td>
-                    </tr>
+                    <td><?= $orderLine['price'] ?></td>
+                    <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
+                    <td><?= $orderLine['price'] * $orderLine['numReceived'] ?></td>
+                </tr>
 
-
-                <?php
-                endforeach;
-            endif;
+            <?php
+            endforeach;
             ?>
 
             <tr style="border: 1px solid #777;">
@@ -192,24 +199,10 @@ $item = $items['Item'];
                     Subtotal
                 </td>
                 <td>
-                    <?php
-                    $subtotalOrdered = 0;
-                    foreach ($orderLines['OrderLine'] as $orderLine):
-
-                        $subtotalOrdered += $orderLine['price'] * $orderLine['quantity'];
-
-                    endforeach;
-                    echo $subtotalOrdered; ?>
+                    <?= $subtotalOrdered; ?>
                 </td>
                 <td>
-                    <?php
-                    $subtotalReceived = 0;
-                    foreach ($orderLines['OrderLine'] as $orderLine):
-
-                        $subtotalReceived += $orderLine['price'] * $orderLine['numReceived'];
-
-                    endforeach;
-                    echo $subtotalReceived; ?>
+                    <?= $subtotalReceived; ?>
                 </td>
             </tr>
             <tr>
@@ -217,7 +210,7 @@ $item = $items['Item'];
                     Vendor must show Purchase Number on Invoices, packing slips, etc. Shipment of this order is "Sold
                     To/Bill To" MPII, LTD, Corporate Office. Vendor must "Ship To: MPII, LTD store, as instructed above.
                     This Purchase Order is to be entered as specified herein. Notify us immediately if unable to ship as
-                    specified.                                                    
+                    specified.
                 </td>
                 <td>
                     Shipping
