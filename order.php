@@ -58,6 +58,8 @@ if (count($orderLines['OrderLine']) > 1) {
     $item = $mosapi->makeAPICall("Account.Item", "Get", null, null, 'json', 'load_relations=all&itemID=' . $orderLines['OrderLine'][0]['itemID']);
     $items[0] = $item['Item'];
 }
+//echo '<pre>';
+//print_r($items);
 ?>
 
 <!DOCTYPE html>
@@ -123,10 +125,19 @@ if (count($orderLines['OrderLine']) > 1) {
                     Rep: <?= $vendor['Reps']['VendorRep']['firstName'] . ' ' . $vendor['Reps']['VendorRep']['lastName'] ?>
                 </div>
                 <div class="col-xs-6">
-                    <?php foreach ($vendor['Contact']['Phones']['ContactPhone'] as $phone) {
-                        if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'] . '<br/>';
-                        if ($phone['useType'] == 'Fax') echo 'Fax: ' . $phone['number'] . '<br/>';
-                    } ?>
+                    <?php
+                    if (isset($vendor['Contact']['Phones']['ContactPhone'][0])) {
+                        foreach ($vendor['Contact']['Phones']['ContactPhone'] as $phone) {
+                            if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'] . '<br/>';
+                            if ($phone['useType'] == 'Fax') echo 'Fax: ' . $phone['number'] . '<br/>';
+                        }
+                    } else {
+                        if ($vendor['Contact']['Phones']['ContactPhone']['useType'] == 'Work')
+                            echo 'Phone: ' . $vendor['Contact']['Phones']['ContactPhone']['number'] . '<br/>';
+                        if ($vendor['Contact']['Phones']['ContactPhone']['useType'] == 'Fax')
+                            echo 'Fax: ' . $vendor['Contact']['Phones']['ContactPhone']['number'] . '<br/>';
+                    }
+                    ?>
                     <?php if (isset($vendor['Contact']['Emails']['ContactEmail']['address'])) {
                         echo 'Email: ' . $vendor['Contact']['Emails']['ContactEmail']['address'];
                     } ?>
@@ -169,14 +180,21 @@ if (count($orderLines['OrderLine']) > 1) {
                     <td><?= $orderLine['numReceived'] ?></td>
                     <?php foreach ($items as $item):
                         if ($item['itemID'] == $orderLine['itemID']): ?>
-                            <td><?php if (is_array($item['CustomFieldValues']['CustomFieldValue'])) {
-                                    foreach ($item['CustomFieldValues']['CustomFieldValue'] as $customField) {
-                                        if ($customField['name'] == 'Unit') {
-                                            echo $customField['value'];
-                                        }
+                            <?php
+                            if (isset($item['CustomFieldValues']['CustomFieldValue'][0])) {
+                                foreach ($item['CustomFieldValues']['CustomFieldValue'] as $customField) {
+                                    if ($customField['name'] == 'Unit') {
+                                        echo '<td>' . $customField['value'] . '</td>';
                                     }
-                                } ?>
-                            </td>
+                                }
+                            } else {
+                                if ($item['CustomFieldValues']['CustomFieldValue']['name'] == 'Unit') {
+                                    echo '<td>' . $item['CustomFieldValues']['CustomFieldValue']['value'] . '</td>';
+                                } else {
+                                    echo '<td></td>';
+                                }
+                            }
+                            ?>
                             <td><?= $item['manufacturerSku'] ?></td>
                             <td><?= $item['description'] ?></td>
                         <?php endif;?>
@@ -210,7 +228,7 @@ if (count($orderLines['OrderLine']) > 1) {
                     Vendor must show Purchase Number on Invoices, packing slips, etc. Shipment of this order is "Sold
                     To/Bill To" MPII, LTD, Corporate Office. Vendor must "Ship To: MPII, LTD store, as instructed above.
                     This Purchase Order is to be entered as specified herein. Notify us immediately if unable to ship as
-                    specified.
+                    specified.                                                    
                 </td>
                 <td>
                     Shipping
