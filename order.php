@@ -171,10 +171,10 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                 </div>
                 <div class="col-xs-5" style="height: 120px; border: 1px solid #777777; border-left: none;">
                     <div class="row">
-                        <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0;">
+                        <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0; margin-bottom: 15px">
                             Special Instructions: </h5>
-                        <?= $order['Note']['note']; ?>
                     </div>
+                    <?= $order['Note']['note']; ?>
                 </div>
             </div>
 
@@ -229,7 +229,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
 
                             <td><?= $orderLine['price'] ?></td>
                             <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
-                            <td><?php if ($order['complete']) echo  $orderLine['price'] * $orderLine['checkedIn']; else echo $orderLine['price'] * $orderLine['numReceived'] ?></td>
+                            <td><?php if ($order['complete']) echo $orderLine['price'] * $orderLine['checkedIn']; else echo $orderLine['price'] * $orderLine['numReceived'] ?></td>
                         </tr>
 
                     <?php
