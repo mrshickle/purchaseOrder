@@ -198,11 +198,13 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                     $subtotalReceived = 0;
                     foreach ($orderLines['OrderLine'] as $orderLine):
                         $subtotalOrdered += $orderLine['price'] * $orderLine['quantity'];
-                        $subtotalReceived += $orderLine['price'] * $orderLine['numReceived'];
+                        if ($order['complete']) $subtotalReceived += $orderLine['price'] * $orderLine['checkedIn'];
+                        else $subtotalReceived += $orderLine['price'] * $orderLine['numReceived'];
                         ?>
                         <tr>
                             <td><?= $orderLine['quantity'] ?></td>
-                            <td><?= $orderLine['numReceived'] ?></td>
+                            <td><?php
+                                if ($order['complete']) echo $orderLine['checkedIn']; else echo $orderLine['numReceived'] ?></td>
                             <?php foreach ($items as $item):
                                 if ($item['itemID'] == $orderLine['itemID']): ?>
                                     <?php
@@ -227,7 +229,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
 
                             <td><?= $orderLine['price'] ?></td>
                             <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
-                            <td><?= $orderLine['price'] * $orderLine['numReceived'] ?></td>
+                            <td><?php if ($order['complete']) echo  $orderLine['price'] * $orderLine['checkedIn']; else echo $orderLine['price'] * $orderLine['numReceived'] ?></td>
                         </tr>
 
                     <?php
