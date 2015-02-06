@@ -25,9 +25,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
         <?php include_once('MOSAPICall.php');
 
 
-//$orders_url = "https://api.merchantos.com/API/Account/" . $account_id . "/Order.json";
-//$shops_url = "https://api.merchantos.com/API/Account/" . $account_id . "/Shop.json?callback=?";
-//$vendors_url = "https://api.merchantos.com/API/Account/" . $account_id . "/Vendor.json?callback=?";
+//https://1d97805f5ba41b2131fd500621330e444b599d2285dd1eac7c2f65cca62a6043:apikey@api.merchantos.com/API/Account/98259/Order.json
 
 
 // setup our credentials
@@ -122,7 +120,19 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                     <?= $shop['Contact']['Addresses']['ContactAddress']['address1']; ?> <br/>
                     <?= $shop['Contact']['Addresses']['ContactAddress']['city'] . ', ' . $shop['Contact']['Addresses']['ContactAddress']['state'] . ' ' . $shop['Contact']['Addresses']['ContactAddress']['zip']; ?>
                     <br/>
-                    Phone: <?= $shop['Contact']['Phones']['ContactPhone']['number']; ?>
+                    <?php
+                    if (isset($shop['Contact']['Phones']['ContactPhone'][0])) {
+                        foreach ($shop['Contact']['Phones']['ContactPhone'] as $phone) {
+                            if ($phone['useType'] == 'Work') echo 'Phone: ' . $phone['number'] . ' - ';
+                            if ($phone['useType'] == 'Fax') echo 'Fax: ' . $phone['number'];
+                        }
+                    } else {
+                        if ($shop['Contact']['Phones']['ContactPhone']['useType'] == 'Work')
+                            echo 'Phone: ' . $shop['Contact']['Phones']['ContactPhone']['number'] . ' - ';
+                        if ($shop['Contact']['Phones']['ContactPhone']['useType'] == 'Fax')
+                            echo 'Fax: ' . $shop['Contact']['Phones']['ContactPhone']['number'];
+                    }
+                    ?>
                 </div>
             </div>
             <div class="row">
@@ -163,7 +173,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                     <div class="row">
                         <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0;">
                             Special Instructions: </h5>
-                        <?= $order['shipInstructions']; ?>
+                        <?= $order['Note']['note']; ?>
                     </div>
                 </div>
             </div>

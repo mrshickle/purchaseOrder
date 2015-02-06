@@ -89,7 +89,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                         <td><?= $order['Vendor']['name'] ?></td>
                         <td><?= substr($order['orderedDate'], 0, -15) ?></td>
                         <td><?= substr($order['receivedDate'], 0, -15) ?></td>
-                        <td><a href="/order.php?order=<?= $order['orderID'] ?>"><span class="glyphicon glyphicon-print"
+                        <td><a href="order.php?order=<?= $order['orderID'] ?>"><span class="glyphicon glyphicon-print"
                                                                                       aria-hidden="true"></span></td>
                     </tr>
 
