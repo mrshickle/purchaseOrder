@@ -34,7 +34,17 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
 //foreach ($buff['Vendor'] as $vendor) {
 //    $vendors[$vendor['vendorID']] = $vendor;
 //}
-        $orders = $mosapi->makeAPICall("Account.Order", "Get", null, null, 'json', 'load_relations=all');
+        $ordersCount = $mosapi->makeAPICall("Account.Order", "Get", null, null, 'json');
+
+        if ($ordersCount['@attributes']['count'] > 100) $pageCount = ($ordersCount['@attributes']['count'] - $ordersCount['@attributes']['count'] % 100) / 100;
+
+        $pageNumber = 0;
+
+        if (isset($_GET['page'])) $pageNumber = $_GET['page'];
+        $offset = $pageNumber * 100;
+
+
+        $orders = $mosapi->makeAPICall("Account.Order", "Get", null, null, 'json', 'load_relations=all&offset=' . $offset);
         $vendors = array();
 
         foreach ($orders['Order'] as $order) {
@@ -71,6 +81,20 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
         </head>
         <body>
         <div class="container">
+            <div class="row text-center">
+                <div class="btn-group" role="group" aria-label="...">
+                    <?php
+                    if ($pageCount > 0) {
+                        for ($i = 0; $i <= $pageCount; $i++) {
+                            echo '<a type="button" class="btn btn-default';
+                            if (!isset($_GET['page']) && $i == 0) echo ' active';
+                            if (isset($_GET['page']) && $_GET['page'] == $i) echo ' active';
+                            echo '" href="?page=' . $i . '">' . ($i + 1) . '</a> ';
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
             <table class="table table-hover">
 
                 <tr>
@@ -90,7 +114,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                         <td><?= substr($order['orderedDate'], 0, -15) ?></td>
                         <td><?= substr($order['receivedDate'], 0, -15) ?></td>
                         <td><a href="order.php?order=<?= $order['orderID'] ?>"><span class="glyphicon glyphicon-print"
-                                                                                      aria-hidden="true"></span></td>
+                                                                                     aria-hidden="true"></span></td>
                     </tr>
 
                 <?php endforeach; ?>

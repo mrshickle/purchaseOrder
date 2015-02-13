@@ -174,7 +174,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                         <h5 style="border-bottom: 1px solid #777; background: #dadada; margin: 0; text-align: center; padding: 4px 0; margin-bottom: 15px">
                             Special Instructions: </h5>
                     </div>
-                    <?= $order['Note']['note']; ?>
+                    <div class="col-xs-12"><?= $order['Note']['note']; ?></div>
                 </div>
             </div>
 
@@ -280,10 +280,10 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
             </div>
             <div class="row text-center">
                 <div class="col-xs-8 col-xs-offset-2">
-                    <h3>
+                    <h5>
                         Do not send duplicate email and postal invoices. <br/>
                         e-mailed invoices must be sent to: LBULAVENDOR@gmail.com
-                    </h3>
+                    </h5`>
                 </div>
             </div>
         </div>
