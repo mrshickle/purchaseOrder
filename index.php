@@ -96,7 +96,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                 </div>
             </div>
             <table class="table table-hover">
-
+<!--// test-->
                 <tr>
                     <td>ID</td>
                     <td>Shop</td>
