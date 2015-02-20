@@ -105,7 +105,7 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                     <td>Date Received</td>
                     <td>Print</td>
                 </tr>
-                <?php foreach ($orders['Order'] as $order): ?>
+                <?php foreach (array_reverse($orders['Order']) as $order): ?>
 
                     <tr>
                         <td><?= $order['orderID'] ?></td>

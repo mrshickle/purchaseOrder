@@ -227,9 +227,9 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                                 <?php endif;?>
                             <?php endforeach; ?>
 
-                            <td><?= $orderLine['price'] ?></td>
-                            <td><?= $orderLine['price'] * $orderLine['quantity'] ?></td>
-                            <td><?php if ($order['complete']) echo $orderLine['price'] * $orderLine['checkedIn']; else echo $orderLine['price'] * $orderLine['numReceived'] ?></td>
+                            <td><?php echo '$'.number_format((float)$orderLine['price'], 2, '.', ''); ?></td>
+                            <td><?php $orderedCost = $orderLine['price'] * $orderLine['quantity']; echo '$'.number_format((float)$orderedCost, 2, '.', '') ?></td>
+                            <td><?php if ($order['complete']) $shipCost = $orderLine['price'] * $orderLine['checkedIn']; else $shipCost = $orderLine['price'] * $orderLine['numReceived']; echo '$'.number_format((float)$shipCost, 2, '.', '') ?></td>
                         </tr>
 
                     <?php
@@ -244,10 +244,10 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                             Subtotal
                         </td>
                         <td>
-                            <?= $subtotalOrdered; ?>
+                            <?= '$'.number_format((float)$subtotalOrdered, 2, '.', ''); ?>
                         </td>
                         <td>
-                            <?= $subtotalReceived; ?>
+                            <?=  '$'.number_format((float)$subtotalReceived, 2, '.', ''); ?>
                         </td>
                     </tr>
                     <tr>
@@ -273,8 +273,8 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
                     </tr>
                     <tr>
                         <td>Total:</td>
-                        <td><?= $subtotalOrdered; ?></td>
-                        <td><?= $subtotalReceived; ?></td>
+                        <td><?= '$'.number_format((float)$subtotalOrdered, 2, '.', '');; ?></td>
+                        <td><?= '$'.number_format((float)$subtotalReceived, 2, '.', ''); ?></td>
                     </tr>
                 </table>
             </div>
